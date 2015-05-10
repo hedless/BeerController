@@ -1,0 +1,12 @@
+
+cpp_base/.metadata/.plugins/org.eclipse.ltk.core.refactoring/.refactorings/.workspace/2015/5/20/refactorings.history
+
+cpp_base/.metadata/.lock
+
+cpp_base/.metadata/.log
+
+*.log
+
+cpp_base/.metadata/.plugins/*
+
+.gitignore.swp
