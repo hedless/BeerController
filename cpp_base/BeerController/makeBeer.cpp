@@ -11,8 +11,8 @@
 #include "InputFile.h"
 using namespace std;
 
-
-int main() {
+int main()
+{
 
 	int count = 0;
 
@@ -30,7 +30,6 @@ int main() {
 	count = beerLog->getCount();
 
 	cout << "Records in output: " << count << endl;
-
 
 }
 

@@ -11,11 +11,24 @@
 #include<string>
 using namespace std;
 
-
-class InputFile {
+class InputFile
+{
 private:
+	struct BeerRecord
+	{
+		char time[19];
+		double internalTemp;
+		double externalTemp;
+		int setTemp;
+		double humidity;
+		bool powerSwitch;
+		double numberVar;
+	};
+	const int timeSize = 19;
 	string inputFilePath;
+	void countRecords(); //grab the count of the file lines
 	void crunchFile(); //load file stats into class object
+	void getSubCString(int beg, int end, const char *cstring, char *substring);
 	int recordCount;
 
 public:
