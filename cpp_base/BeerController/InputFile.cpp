@@ -123,16 +123,6 @@ void InputFile::convertFile()
 
 		}
 
-//		cout << cLine << endl;
-//
-//		cout << "Date: " << br[count].time << endl;
-//		cout << "internal temp: " << br[count].internalTemp << endl;
-//		cout << "out temp: " << br[count].externalTemp << endl;
-//		cout << "set temp: " << br[count].setTemp << endl;
-//		cout << "humidity: " << br[count].humidity << endl;
-//		cout << "power: " << br[count].powerSwitch << endl;
-//		cout << "numbar val " << br[count].numberVar << endl;
-
 		count++;
 	}
 
