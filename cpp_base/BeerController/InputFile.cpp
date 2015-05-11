@@ -11,11 +11,12 @@
 #include <cstring>
 using namespace std;
 
-InputFile::InputFile(string filePath)
+InputFile::InputFile(string filePath, string outputFilePath)
 {
 	inputFilePath = filePath;
+	outFile = outputFilePath;
 	countRecords();
-	crunchFile();
+	convertFile();
 }
 
 InputFile::~InputFile()
@@ -36,7 +37,7 @@ void InputFile::countRecords()
 	beerLogFile.close();
 }
 
-void InputFile::crunchFile()
+void InputFile::convertFile()
 {
 	string line;
 	ifstream beerLogFile(inputFilePath);
@@ -63,53 +64,55 @@ void InputFile::crunchFile()
 			{
 				if (column == 0) //the Date column
 				{
-					char tempCS[timeSize];
+					char tempCS[(index - begIndex) + 1];
 					getSubCString(begIndex, index, cLine, tempCS);
 
-					for (int i = 0; i < timeSize; i++)
+					for (int i = 0; i < timeSize - 1; i++)
 						br[count].time[i] = tempCS[i]; // copy date info into cstring
 				}
 				else if (column == 1)
 				{
-					char tempCS[index - begIndex + 1];
+					char tempCS[(index - begIndex) + 1];
 					getSubCString(begIndex, index, cLine, tempCS); //grab substring from cstring
 					br[count].internalTemp = atof(tempCS); //convert to double
 				}
 				else if (column == 2)
 				{
-					char tempCS[index - begIndex + 1];
+					char tempCS[(index - begIndex) + 1];
 					getSubCString(begIndex, index, cLine, tempCS); //grab substring from cstring
 					br[count].externalTemp = atof(tempCS); //convert to double
 				}
 				else if (column == 3)
 				{
-					char tempCS[index - begIndex + 1];
+					char tempCS[(index - begIndex) + 1];
 					getSubCString(begIndex, index, cLine, tempCS); //grab substring from cstring
 					br[count].setTemp = atoi(tempCS); //convert to int
 				}
 				else if (column == 4)
 				{
-					char tempCS[index - begIndex + 1];
+					char tempCS[(index - begIndex) + 1];
 					getSubCString(begIndex, index, cLine, tempCS); //grab substring from cstring
 					br[count].humidity = atof(tempCS); //convert to double
 				}
 				else if (column == 5)
 				{
-					char tempCS[index - begIndex + 1];
+					char tempCS[(index - begIndex) + 1];
+
 					getSubCString(begIndex, index, cLine, tempCS); //grab substring from cstring
 					string tempST = tempCS;
-					cout << "string bool " << tempST << endl;
-					if (tempST == "On.")
+
+					if (tempST == "On")
 						br[count].powerSwitch = true;
 					else
 						br[count].powerSwitch = false;
+
+					//now grab the last column since we are out of commas
+					char tempCSlast[line.length() - index];
+					getSubCString(index + 1, line.length(), cLine, tempCSlast);
+					br[count].numberVar = atof(tempCSlast);
+
 				}
-				else if (column == 6)
-				{
-					char tempCS[index - begIndex + 1];
-					getSubCString(begIndex, index, cLine, tempCS); //grab substring from cstring
-					br[count].numberVar = atof(tempCS); //convert to double
-				}
+
 				begIndex = index + 1; //set begining index to after the comma
 				column++; //move to next column.
 
@@ -132,6 +135,9 @@ void InputFile::crunchFile()
 	}
 
 	beerLogFile.close();
+
+	saveToFile(br);
+
 }
 
 int InputFile::getCount()
@@ -146,9 +152,22 @@ void InputFile::getSubCString(int beg, int end, const char *cstring,
 	{
 		substring[i - beg] = cstring[i];
 	}
-	cout << "substring: " << substring << endl;
-	substring[(end - beg) + 1] = '\0';
+
+	substring[(end - beg)] = '\0';
+	//cout << "substring: " << substring << " beg: " << beg << "end: " << end << endl;
 }
+
+void InputFile::saveToFile(BeerRecord *bArray)
+{
+	fstream outputFile;
+	outputFile.open(outFile, ios::out | ios::binary);
+
+	for(int i = 0; i < recordCount; i++){
+		outputFile.write(reinterpret_cast<char *>(&bArray[i]),sizeof(bArray[i]));
+	}
+}
+
+
 
 //		char * cLine = new char[line.length() + 1]; //create cstring array
 //		strcpy(cLine,line.c_str()); //copy string into the cstring
