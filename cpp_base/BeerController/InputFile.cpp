@@ -16,7 +16,9 @@ InputFile::InputFile(string filePath, string outputFilePath)
 	inputFilePath = filePath;
 	outFile = outputFilePath;
 	countRecords();
-	convertFile();
+	convertFile(); //convert the text file into a binary file.
+
+	updateStats(); //update the min and max stats from dat file
 }
 
 InputFile::~InputFile()
@@ -45,7 +47,7 @@ void InputFile::convertFile()
 	BeerRecord * br = new BeerRecord[recordCount];
 
 	int count = 0;
-	while (getline(beerLogFile, line) && count < 10)
+	while (getline(beerLogFile, line))
 	{
 
 		/* converting string to cstring before spliting it up into
@@ -121,15 +123,15 @@ void InputFile::convertFile()
 
 		}
 
-		cout << cLine << endl;
-
-		cout << "Date: " << br[count].time << endl;
-		cout << "internal temp: " << br[count].internalTemp << endl;
-		cout << "out temp: " << br[count].externalTemp << endl;
-		cout << "set temp: " << br[count].setTemp << endl;
-		cout << "humidity: " << br[count].humidity << endl;
-		cout << "power: " << br[count].powerSwitch << endl;
-		cout << "numbar val " << br[count].numberVar << endl;
+//		cout << cLine << endl;
+//
+//		cout << "Date: " << br[count].time << endl;
+//		cout << "internal temp: " << br[count].internalTemp << endl;
+//		cout << "out temp: " << br[count].externalTemp << endl;
+//		cout << "set temp: " << br[count].setTemp << endl;
+//		cout << "humidity: " << br[count].humidity << endl;
+//		cout << "power: " << br[count].powerSwitch << endl;
+//		cout << "numbar val " << br[count].numberVar << endl;
 
 		count++;
 	}
@@ -162,17 +164,134 @@ void InputFile::saveToFile(BeerRecord *bArray)
 	fstream outputFile;
 	outputFile.open(outFile, ios::out | ios::binary);
 
-	for(int i = 0; i < recordCount; i++){
-		outputFile.write(reinterpret_cast<char *>(&bArray[i]),sizeof(bArray[i]));
+	for (int i = 0; i < recordCount; i++)
+	{
+		outputFile.write(reinterpret_cast<char *>(&bArray[i]),
+				sizeof(bArray[i]));
 	}
+	outputFile.close();
 }
 
+void InputFile::updateStats()
+{
+	BeerRecord br;
 
+	fstream datFile;
+	datFile.open(outFile, ios::in | ios::binary);
 
-//		char * cLine = new char[line.length() + 1]; //create cstring array
-//		strcpy(cLine,line.c_str()); //copy string into the cstring
-//		std::string str = "string";
-//		char *cstr = new char[str.length() + 1];
-//		strcpy(cstr, str.c_str());
-//		// do stuff
-//		delete [] cstr;
+	if (!datFile)
+	{
+		cout << "Error opening dat file: " << outFile << endl;
+	}
+
+	datFile.read(reinterpret_cast<char *>(&br), sizeof(BeerRecord));
+
+	maxBeerTemp = br.internalTemp;
+	minBeerTemp = br.internalTemp;
+	maxOutTemp = br.externalTemp;
+	minOutTemp = br.externalTemp;
+	maxHumidity = br.humidity;
+	minHumidity = br.humidity;
+	maxTempDiff = br.externalTemp - br.internalTemp;
+	maxSetTemp = br.setTemp;
+	minSetTemp = br.setTemp;
+	if(br.internalTemp > br.setTemp)
+		maxTempOff = br.internalTemp - br.setTemp;
+	else
+		maxTempOff = br.setTemp - br.internalTemp;
+
+	double sumMaxTempOff = maxTempOff;
+
+	while (!datFile.eof())
+	{
+		if (br.internalTemp > maxBeerTemp)
+			maxBeerTemp = br.internalTemp;
+		if (br.internalTemp < minBeerTemp)
+			minBeerTemp = br.internalTemp;
+		if (br.externalTemp > maxOutTemp)
+			maxOutTemp = br.externalTemp;
+		if (br.externalTemp < minOutTemp)
+			minOutTemp = br.externalTemp;
+		if (br.humidity > maxHumidity)
+			maxHumidity = br.humidity;
+		if (br.humidity < minHumidity)
+			minHumidity = br.humidity;
+		if (maxTempDiff < br.externalTemp - br.internalTemp)
+			maxTempDiff = br.externalTemp - br.internalTemp;
+		if (maxSetTemp < br.setTemp)
+			maxSetTemp = br.setTemp;
+		if (minSetTemp > br.setTemp)
+			minSetTemp = br.setTemp;
+
+		//find max amount that temp was different than set point regardless if it was above or below
+		double tempMaxTempOff;
+		if(br.internalTemp > br.setTemp)
+			tempMaxTempOff = br.internalTemp - br.setTemp;
+		else
+			tempMaxTempOff = br.setTemp - br.internalTemp;
+		if (maxTempOff < tempMaxTempOff)
+			maxTempOff = tempMaxTempOff;
+		sumMaxTempOff = sumMaxTempOff + tempMaxTempOff; //to calculate average temperature off set
+
+		datFile.read(reinterpret_cast<char *>(&br), sizeof(BeerRecord));
+	}
+
+	averageTempOff = (sumMaxTempOff/recordCount) * 1.0; //output as double
+
+	datFile.close();
+}
+
+double InputFile::getMaxBeerTemp()
+{
+	return maxBeerTemp;
+}
+
+double InputFile::getMinBeerTemp()
+{
+	return minBeerTemp;
+}
+
+double InputFile::getMaxOutsideTemp()
+{
+	return maxOutTemp;
+}
+
+double InputFile::getMinOutsideTemp()
+{
+	return minOutTemp;
+}
+
+double InputFile::getMaxHumidity()
+{
+	return maxHumidity;
+}
+
+double InputFile::getMinHumidity()
+{
+	return minHumidity;
+}
+
+double InputFile::getMaxTempDiff()
+{
+	return maxTempDiff;
+}
+
+int InputFile::getMaxSetTemp()
+{
+	return maxSetTemp;
+}
+
+int InputFile::getMinSetTemp()
+{
+	return minSetTemp;
+}
+
+double InputFile::getMaxTempOff()
+{
+	return maxTempOff;
+}
+
+double InputFile::getAverateTempOff()
+{
+	return averageTempOff;
+}

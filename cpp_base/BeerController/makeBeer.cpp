@@ -32,6 +32,17 @@ int main()
 
 	cout << "Records in output: " << count << endl;
 
+	cout << "MaxTemp: " << beerLog->getMaxBeerTemp() << endl;
+	cout << "MinTemp: " << beerLog->getMinBeerTemp() << endl;
+	cout << "Max Outside Temp: " << beerLog->getMaxOutsideTemp() << endl;
+	cout << "Min Outside Temp: " << beerLog->getMinOutsideTemp() << endl;
+	cout << "Max Humidity: %" << beerLog->getMaxHumidity() << endl;
+	cout << "Min Humidity: %" << beerLog->getMinHumidity() << endl;
+	cout << "Max temp difference between outside and beer: " << beerLog->getMaxTempDiff() << endl;
+	cout << "Max Set temperature was: " << beerLog->getMaxSetTemp() << endl;
+	cout << "Min Set temperature was: " << beerLog->getMinSetTemp() << endl;
+	cout << "Maximum the temp was off from set point: " << beerLog->getMaxTempOff() << endl;
+	cout << "Average difference from set point: " << beerLog->getAverateTempOff() << endl;
 
 
 }
