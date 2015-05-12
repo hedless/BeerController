@@ -13,12 +13,6 @@
 #include <thread>
 #include <iomanip>
 #include <windows.h>
-//#include "koolplot.h"
-//#include "winbgim.h"
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <cstdlib>
-//#include <cstring>
 #include "PID.h"
 #include "InputFile.h"
 #include "Cooler.h"
@@ -48,14 +42,16 @@ int main()
 
 	cout << "Welcome to the Beer Controller." << endl;
 
-	bool quit = false;
+	bool quit = false; //used for loop
 
+    //Allow user to choose to get stats from a log file or run the controller
 	while (!quit)
 	{
 
 		bool moveOn = false;
 		char input;
 
+        //get user input, check for proper input
 		do
 		{
 			cout
@@ -88,11 +84,37 @@ int main()
 		else if (input == 'c')
 		{
 
-			//starting temp point
-			double temperature = 70;
-			double fridgeUpSpeed = 0.1;
-			double fridgeDownSpeed = 0.2;
-			double fridgeMaxTempVariance = 50;
+            cout << "What temp do you want the beer at?: ";
+            cin >> desiredBeerTemp;
+            cin.ignore();
+
+            int type = 0;
+            while(!(type == 1 || type == 2))
+            {
+                cout << "Which cooler did you want to use? [1] for Fridge, [2] for Custom Cooler: ";
+                cin >> type;
+                cin.ignore();
+            }
+
+            double temperature, fridgeUpSpeed, fridgeDownSpeed, fridgeMaxTempVariance;
+
+            if(type == 1){
+                //set for a fridge that can cool quickly
+                temperature = 70; //starting temp point
+                fridgeUpSpeed = 0.1;
+                fridgeDownSpeed = 0.2;
+                fridgeMaxTempVariance = 50;
+            }
+            else
+            {
+                //set for a custom cooler that cools slowly
+                temperature = 70; //starting temp point
+                fridgeUpSpeed = 0.1;
+                fridgeDownSpeed = 0.1;
+                fridgeMaxTempVariance = 20;  //not used yet but can affect cooler
+            //TODO: update here for future improvement on temp controlling
+
+            }
 
 			//set up fridge to run with
 			Cooler fridge(temperature, fridgeUpSpeed, fridgeDownSpeed,
