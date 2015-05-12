@@ -25,7 +25,7 @@ private:
 		double numberVar;
 	};
 
-	const int timeSize = 20;
+	int timeSize;
 	string inputFilePath;
 	int recordCount;
 	string outFile;

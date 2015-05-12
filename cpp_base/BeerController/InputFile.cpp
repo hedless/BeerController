@@ -9,10 +9,14 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <string>
+#include <cstdlib>
 using namespace std;
+
 
 InputFile::InputFile(string filePath, string outputFilePath)
 {
+    timeSize = 20;
 	inputFilePath = filePath;
 	outFile = outputFilePath;
 	countRecords();
@@ -29,20 +33,23 @@ InputFile::~InputFile()
 void InputFile::countRecords()
 {
 	string line;
-	ifstream beerLogFile(inputFilePath);
+
+	fstream inFile;
+	inFile.open(inputFilePath.c_str(),ios::in);
 	int count = 0;
-	while (getline(beerLogFile, line))
+	while (getline(inFile, line))
 	{
 		count++;
 	}
 	recordCount = count;
-	beerLogFile.close();
+	inFile.close();
 }
 
 void InputFile::convertFile()
 {
 	string line;
-	ifstream beerLogFile(inputFilePath);
+
+	ifstream beerLogFile(inputFilePath.c_str(), ios::in);
 
 	BeerRecord * br = new BeerRecord[recordCount];
 
@@ -152,7 +159,7 @@ void InputFile::getSubCString(int beg, int end, const char *cstring,
 void InputFile::saveToFile(BeerRecord *bArray)
 {
 	fstream outputFile;
-	outputFile.open(outFile, ios::out | ios::binary);
+	outputFile.open(outFile.c_str(), ios::out | ios::binary);
 
 	for (int i = 0; i < recordCount; i++)
 	{
@@ -167,7 +174,7 @@ void InputFile::updateStats()
 	BeerRecord br;
 
 	fstream datFile;
-	datFile.open(outFile, ios::in | ios::binary);
+	datFile.open(outFile.c_str(), ios::in | ios::binary);
 
 	if (!datFile)
 	{

@@ -12,24 +12,40 @@
 #include <chrono>
 #include <thread>
 #include <iomanip>
+#include <windows.h>
+//#include "koolplot.h"
+//#include "winbgim.h"
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <cstdlib>
+//#include <cstring>
 #include "PID.h"
 #include "InputFile.h"
 #include "Cooler.h"
 using namespace std;
 
+const char kPathSeparator =
+#ifdef _WIN32
+                            '\\';
+#else
+                            '/';
+#endif
+
 void runController(Cooler &unit); //to run the controller
 long getMillisec(); //get current time in milliseconds
 void displayStats(InputFile *);  //display stats for an input file
 
-string inputPath = "/Users/dhedley/BeerController/sensor_output"; //location for the sensor output info
+string inputPath = "C:\\work\\CodeBlocks\\BeerController\\BeerController\\BeerController\\sensor_output"; //location for the sensor output info
 string inputFileName = "beerlog.txt"; //text log file to crunch through for stats
 string outputFileName = "outputBeerLog.dat"; //binary version of the log file created by InputFile class
 string newBeerLog = "newBeer.log"; //newBeerlog created by the controller program
-int dTime = 10; //Set for number of loops before it switches power again to keep from turning the cooler on and off too fast
+int dTime = 1; //Set for number of loops before it switches power again to keep from turning the cooler on and off too fast
 int desiredBeerTemp = 65; //default temperature you want your beer set
+int sampleTime = 1000; //sample time in milliseconds, how often it reads temp
 
 int main()
 {
+
 	cout << "Welcome to the Beer Controller." << endl;
 
 	bool quit = false;
@@ -63,8 +79,8 @@ int main()
 			//Create object of the beer log
 			InputFile *beerLog;
 
-			beerLog = new InputFile(inputPath + "/" + userFileName,
-					inputPath + "/" + userFileName + ".dat");
+			beerLog = new InputFile(inputPath + kPathSeparator + userFileName,
+					inputPath + kPathSeparator + userFileName + ".dat");
 
 			//output number of records found in the log file
 			displayStats(beerLog);
@@ -95,16 +111,16 @@ void runController(Cooler &unit)
 	double humidity = 43.00; //set for now until sensor is put in place
 	double outsidTemp = 74.00; //set as 74 by air conditioner
 	int minDuration = dTime; //insure that the fridge doesn't get turned on and off to frequently
-	int sampleTime = 100; //sample time in milliseconds
 	int WindowSize = 5000;
 	long windowStartTime = getMillisec();
 
 	//logfile for storing new run
 	fstream outLogFile;
-	outLogFile.open(inputPath + "/" + newBeerLog, ios::out | ios::app);
+	string newLog = inputPath + kPathSeparator + newBeerLog;
+    outLogFile.open(newLog.c_str(), ios::out | ios::app);
 
 	//setup PID with specs
-	PID myPID(&Input, &Output, &Setpoint, 2, 100, 1, DIRECT);
+	PID myPID(&Input, &Output, &Setpoint, 1, 40, 1, DIRECT);
 
 	//tell the PID to range between 0 and the full window size
 	myPID.SetOutputLimits(0, WindowSize);
@@ -121,17 +137,18 @@ void runController(Cooler &unit)
 		myPID.Compute(); //computes the error of it being off and will update output on what to do
 
 		//to pause the time interval for when a temperature check needs to take place
-		std::this_thread::sleep_for(std::chrono::milliseconds(sampleTime));
+		Sleep(sampleTime);
+		//this_thread::sleep_for(std::chrono::milliseconds(sampleTime));
 
 		//Get the current time for logging info
 		time_t t = time(0);   // get time now
 		struct tm * now = localtime(&t);
 
 		//set up date field for posting ot log
-		string date = to_string(now->tm_year + 1900) + "-"
-				+ to_string(now->tm_mon + 1) + "-" + to_string(now->tm_mday)
-				+ " " + to_string(now->tm_hour) + ":" + to_string(now->tm_min)
-				+ ":" + to_string(now->tm_sec);
+		//std::string date = to_string(now->tm_year + 1900) + "-"
+		//		+ to_string(now->tm_mon + 1) + "-" + to_string(now->tm_mday)
+		//		+ " " + to_string(now->tm_hour) + ":" + to_string(now->tm_min)
+		//		+ ":" + to_string(now->tm_sec);
 
 		//Set string representation of power being on or off
 		string powerState;
@@ -142,13 +159,19 @@ void runController(Cooler &unit)
 
 		//set precision to show 2 decimal places for general output
 		cout << setprecision(2) << fixed;
-		cout << date << "," << temperature << "," << outsidTemp << ","
+		cout << (now->tm_year + 1900) << "-"
+				<< (now->tm_mon + 1) << "-" << now->tm_mday
+				<< " " << now->tm_hour << ":" << now->tm_min
+				<< ":" << now->tm_sec << "," << temperature << "," << outsidTemp << ","
 				<< Setpoint << "," << humidity << "," << powerState << ","
 				<< Output << endl;
 
 		//log the current output
 		outLogFile << setprecision(2) << fixed;
-		outLogFile << date << "," << temperature << "," << outsidTemp << ","
+		outLogFile << (now->tm_year + 1900) << "-"
+				<< (now->tm_mon + 1) << "-" << now->tm_mday
+				<< " " << now->tm_hour << ":" << now->tm_min
+				<< ":" << now->tm_sec << "," << temperature << "," << outsidTemp << ","
 				<< Setpoint << "," << humidity << "," << powerState << ","
 				<< Output << endl;
 
