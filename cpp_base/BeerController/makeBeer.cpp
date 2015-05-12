@@ -122,7 +122,7 @@ int main()
 		else if (input == 'c')
 		{
 
-            cout << "What temp do you want the beer at?: ";
+            cout << "What temp do you want the beer at? (F): ";
             cin >> desiredBeerTemp;
             cin.ignore();
 
