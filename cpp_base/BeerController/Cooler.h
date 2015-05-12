@@ -18,7 +18,7 @@ private:
 	double maxTempVariance; //max temperature difference between outside and inside temps
 	double tpIncreaseSpeed;
 	double tpDecreaseSpeed;
-	bool power = false;
+	bool power;
 
 public:
 	Cooler(double, double, double, double);

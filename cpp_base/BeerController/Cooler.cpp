@@ -13,6 +13,7 @@ Cooler::Cooler(double currentTemp, double upSpeed, double downSpeed, double maxT
 	tpIncreaseSpeed = upSpeed;
 	tpDecreaseSpeed = downSpeed;
 	maxTempVariance = maxTempVar;
+	power = false;
 
 }
 
