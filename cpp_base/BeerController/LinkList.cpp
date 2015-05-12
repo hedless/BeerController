@@ -1,8 +1,8 @@
 /*
  * LinkList.cpp
  *
- *  Created on: Apr 14, 2015
- *      Author: dhedley
+ *  Created on: May 1, 2015
+ *      Author: dhedley and msanders
  */
 
 #include <iostream>
@@ -25,8 +25,7 @@ public:
 	void insertNode(T);
 	void deleteNode(T);
 	void displayList() const;
-	void findMaxValues(T*,int);
-	int findMaxValue();
+	T getValue(int); //gets the value for a node
 	virtual ~LinkList();
 };
 
@@ -145,32 +144,6 @@ void LinkList<T>::displayList() const {
 }
 
 template <class T>
-void LinkList<T>::findMaxValues(T *array, int size) {
-	ListNode *nodePtr;
-	nodePtr = head;
-
-	T* tempArray = new T[count];
-
-	//put all nodes into an array to sort
-	for (int i = 0; i < count; i++) {
-		tempArray[i] = nodePtr->value;
-		nodePtr = nodePtr->next;
-	}
-
-	sortArray(tempArray, count); //sort ascending
-
-	//grab only the last items from the list needed for highest values
-	//since the array is sorted ascending. And add to the incoming array.
-	int sizeIndex = 0;
-	for (int i = count - 1; i >= (count - size); i--) {
-		array[sizeIndex] = tempArray[i];
-		sizeIndex++;
-	}
-
-	delete[] tempArray;
-}
-
-template <class T>
 void LinkList<T>::sortArray(T *array, int size) {
 
 	int startScan, minIndex, minValue;
@@ -190,23 +163,17 @@ void LinkList<T>::sortArray(T *array, int size) {
 
 }
 
+
 template <class T>
-int LinkList<T>::findMaxValue() {
+T LinkList<T>::getValue(int index) {
 	ListNode *nodePtr;
 	nodePtr = head;
 
-	int maxNum = nodePtr->value;
-	nodePtr = nodePtr->next;
+    for (int i = 0; i < index; i++){
+        nodePtr = nodePtr->next;
+    }
 
-	while (nodePtr) {
-		if (nodePtr->value > maxNum) {
-			maxNum = nodePtr->value;
-		}
-		nodePtr = nodePtr->next;
-	}
-
-	return (maxNum);
+    return(nodePtr->value);
 
 }
-
 

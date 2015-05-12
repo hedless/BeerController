@@ -1,21 +1,22 @@
 /*
  * makeBeer.cpp
  *
- *  Created on: May 10, 2015
- *      Author: dhedley
+ *  Created on: May 1, 2015
+ *      Author: dhedley and msanders
  */
 
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <time.h>
-#include <chrono>
-#include <thread>
+#include <time.h> //need to use a time to help control effectivity of PID algorithm
+#include <chrono> //to help with getting milliseconds
 #include <iomanip>
-#include <windows.h>
-#include "PID.h"
-#include "InputFile.h"
-#include "Cooler.h"
+#include <windows.h> //used to get the Sleep function to control the sleep
+#include <dirent.h> //used to get directory listing of files
+#include "PID.h" //code that has algorithm for correcting error, copied from opensource site due to algorithm complexity
+#include "InputFile.h" //code to read log files, create a binary file and then calculate statistics
+#include "Cooler.h" //code to simulate a cooler, allows us to try different types of coolers that react differently
+#include "LinkList.cpp" //linked list using templates
 using namespace std;
 
 const char kPathSeparator =
@@ -32,13 +33,14 @@ void displayStats(InputFile *);  //display stats for an input file
 string inputPath = "C:\\work\\CodeBlocks\\BeerController\\BeerController\\BeerController\\sensor_output"; //location for the sensor output info
 string inputFileName = "beerlog.txt"; //text log file to crunch through for stats
 string outputFileName = "outputBeerLog.dat"; //binary version of the log file created by InputFile class
-string newBeerLog = "newBeer.log"; //newBeerlog created by the controller program
+string newBeerLog = "newBeer.txt"; //newBeerlog created by the controller program
 int dTime = 1; //Set for number of loops before it switches power again to keep from turning the cooler on and off too fast
 int desiredBeerTemp = 65; //default temperature you want your beer set
 int sampleTime = 1000; //sample time in milliseconds, how often it reads temp
 
 int main()
 {
+    LinkList<string> fileList;
 
 	cout << "Welcome to the Beer Controller." << endl;
 
@@ -68,18 +70,54 @@ int main()
 
 		if (input == 's')
 		{
+		    DIR *dir;
+            struct dirent *ent;
+            if ((dir = opendir (inputPath.c_str())) != NULL) {
+                //print all the files and directories within directory
+                cout << "Here are the available files to choose from: " << endl;
+                //list files
+                int fileCount = 1;
+                while ((ent = readdir (dir)) != NULL) {
+                    //strip off any file that isn't a file or a .dat file
+                    if(ent->d_name[0] != '.'&& !strstr(ent->d_name,".dat")) {
+                        cout << fileCount << ". " << ent->d_name << endl;
+                        fileList.appendNode(ent->d_name);
+                        fileCount++;
+                    }
+                }
+                closedir (dir);
+            } else {
+            //could not open directory
+                perror ("");
+                return 0;
+            }
+
+
+
 			string userFileName;
-			cout << "What file do you want to load(must be located in this dir: " << inputPath << ")?: ";
-			getline(cin,userFileName);
+			int fileNum = 0;
+
+			//ask user which log file to load
+			cout << endl;
+			cout << "What file do you want to load? (chooses a number from above list): ";
+			cin >> fileNum;
+			cin.ignore();
+
+            userFileName = fileList.getValue(fileNum - 1);
+            cout << "Stats for: " << userFileName << endl;
 
 			//Create object of the beer log
 			InputFile *beerLog;
 
+            //creates object and then converts it to a dat file
 			beerLog = new InputFile(inputPath + kPathSeparator + userFileName,
 					inputPath + kPathSeparator + userFileName + ".dat");
 
 			//output number of records found in the log file
 			displayStats(beerLog);
+
+			//we are done with the object now
+			delete beerLog;
 		}
 		else if (input == 'c')
 		{

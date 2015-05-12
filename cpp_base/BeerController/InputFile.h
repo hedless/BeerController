@@ -1,8 +1,8 @@
 /*
  * InputFile.h
  *
- *  Created on: May 10, 2015
- *      Author: dhedley
+ *  Created on: May 1, 2015
+ *      Author: dhedley and msanders
  */
 
 #ifndef INPUTFILE_H_
