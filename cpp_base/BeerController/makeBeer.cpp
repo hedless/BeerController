@@ -57,7 +57,7 @@ int main()
 		if (input == 's')
 		{
 			string userFileName;
-			cout << "What file do you want to load?: ";
+			cout << "What file do you want to load(must be located in this dir: " << inputPath << ")?: ";
 			getline(cin,userFileName);
 
 			//Create object of the beer log
