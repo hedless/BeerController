@@ -2,7 +2,7 @@
  * Cooler.cpp
  *
  *  Created on: May 10, 2015
- *      Author: dhedley
+ *      Author: dhedley and msanders
  */
 
 #include "Cooler.h"
